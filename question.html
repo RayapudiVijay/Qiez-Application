@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interactive Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px 20px;
+      background-color: #ffffffcc;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .profile-icon {
+      position: absolute;
+      left: 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/847/847969.png');
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .quiz-container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 600px;
+      animation: fadeInUp 0.8s ease;
+      position: relative;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #444;
+    }
+
+    .question {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+    }
+
+    .options li {
+      margin-bottom: 15px;
+    }
+
+    .options button {
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #eef1f6;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .options button:hover {
+      background-color: #d4dcf0;
+      transform: scale(1.02);
+    }
+
+    .btn {
+      margin-top: 20px;
+      padding: 12px 25px;
+      font-size: 16px;
+      background-color: #667eea;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: #5a6edc;
+      transform: scale(1.05);
+    }
+
+    #score, #timer {
+      font-size: 18px;
+      margin-top: 15px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    footer {
+      text-align: center;
+      padding: 12px;
+      background-color: #ffffffcc;
+      font-size: 14px;
+      color: #333;
+    }
+
+    /* Popup Modal */
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      text-align: center;
+      z-index: 200;
+      transition: transform 0.3s ease;
+    }
+
+    .popup.active {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .popup h3 {
+      font-size: 22px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .popup p {
+      font-size: 18px;
+      color: #555;
+    }
+
+    .popup .btn {
+      margin-top: 20px;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 18px;
+      }
+      .quiz-container {
+        padding: 20px;
+      }
+      .options button {
+        font-size: 15px;
+        padding: 10px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="profile-icon" title="Profile"></div>
+    <h1>Quiz Master</h1>
+  </header>
+
+  <main>
+    <div class="quiz-container">
+      <h2>Interactive Quiz</h2>
+      <div id="question-container">
+        <p class="question" id="question"></p>
+        <ul class="options" id="options"></ul>
+      </div>
+      <button class="btn" id="next-btn" onclick="nextQuestion()">Next</button>
+      <p id="timer">Time Left: 15s</p>
+      <p id="score"></p>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Quiz App. All rights reserved.
+  </footer>
+
+  <div class="popup" id="result-popup">
+    <h3>🎉 Quiz Completed!</h3>
+    <p id="final-score"></p>
+    <button class="btn" onclick="location.reload()">Try Again</button>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "Which Indian leader participated in all three Round Table Conferences?",
+        options: ["Dr. B.R.Ambedkar", "Mahatma Gandhi", "Jawaharlal Nehru"],
+        answer: "Dr. B.R.Ambedkar"
+      },
+      {
+        question: "What is the capital of India?",
+        options: ["Madhya Pradesh", "New Delhi", "Mumbai"],
+        answer: "New Delhi"
+      },
+      {
+        question: "What is 2 + 2?",
+        options: ["3", "4", "5"],
+        answer: "4"
+      },
+      {
+        question: "What is the capital of France?",
+        options: ["Paris", "London", "Berlin"],
+        answer: "Paris"
+      },
+      {
+        question: "Which is the largest planet?",
+        options: ["Earth", "Jupiter", "Mars"],
+        answer: "Jupiter"
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timer;
+    let timeLeft = 15;
+
+    function startTimer() {
+      clearInterval(timer);
+      timeLeft = 15;
+      document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
+        if (timeLeft === 0) {
+          alert("⏰ Time's up!");
+          nextQuestion();
+        }
+      }, 1000);
+    }
+
+    function loadQuestion() {
+      const q = questions[currentQuestionIndex];
+      document.getElementById("question").innerText = q.question;
+      const optionsList = document.getElementById("options");
+      optionsList.innerHTML = "";
+
+      q.options.forEach(option => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.textContent = option;
+        btn.onclick = () => checkAnswer(option);
+        li.appendChild(btn);
+        optionsList.appendChild(li);
+      });
+
+      document.getElementById("next-btn").style.display = "none";
+      startTimer();
+    }
+
+    function checkAnswer(selectedOption) {
+      clearInterval(timer);
+      const correct = questions[currentQuestionIndex].answer;
+      if (selectedOption === correct) {
+        score++;
+        alert("✅ Correct!");
+      } else {
+        alert(`❌ Incorrect. Correct answer: ${correct}`);
+      }
+      document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        loadQuestion();
+      } else {
+        clearInterval(timer);
+        document.getElementById("question-container").style.display = "none";
+        document.getElementById("next-btn").style.display = "none";
+        document.getElementById("score").style.display = "none";
+        document.getElementById("timer").style.display = "none";
+
+        document.getElementById("final-score").innerText = `You scored ${score} out of ${questions.length}!`;
+        document.getElementById("result-popup").classList.add("active");
+      }
+    }
+
+    window.onload = () => {
+      loadQuestion();
+    };
+  </script>
+</body>
+</html>
