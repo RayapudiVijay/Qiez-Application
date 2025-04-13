@@ -71,3 +71,5 @@ Question difficulty levels and categories.
 Progress bar or animated transitions between questions.
 
 # OUTPUT
+![Image](https://github.com/user-attachments/assets/402762a5-fb64-4d62-8069-6b4f24ddb8d1)
+
